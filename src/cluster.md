@@ -8,22 +8,7 @@ PallasDB's cluster mode provides strongly-consistent replicated writes using the
 
 ## Architecture
 
-```
-  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-  │   node-1    │    │   node-2    │    │   node-3    │
-  │  (leader)   │◄──►│  (follower) │◄──►│  (follower) │
-  │             │    │             │    │             │
-  │ gRPC :50051 │    │ gRPC :50052 │    │ gRPC :50053 │
-  │ Raft :7001  │    │ Raft :7002  │    │ Raft :7003  │
-  │ Serf :7946  │    │ Serf :7947  │    │ Serf :7948  │
-  └─────────────┘    └─────────────┘    └─────────────┘
-        │
-        ▼
-  ┌──────────────────┐
-  │   KV Store       │  ← db.KV (LSM engine)
-  │   (FSM)          │
-  └──────────────────┘
-```
+![Cluster Topology](images/cluster.png)
 
 All mutating writes (Put, Delete) go through the Raft leader. Reads can be served locally from any node's FSM state (eventual consistency for reads, strong consistency for writes).
 

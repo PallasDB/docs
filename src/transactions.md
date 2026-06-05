@@ -8,10 +8,7 @@ PallasDB implements **snapshot-isolated, optimistic MVCC transactions**. Each tr
 
 ## Transaction types
 
-| Type | Description |
-|---|---|
-| `KVTX` | Raw key-value transaction |
-| `DBTX` | Higher-level table transaction (wraps `KVTX`) |
+![Transaction Types](images/tx-types.png)
 
 Both types support nested transactions: `tx.NewTX()` creates a child transaction whose updates are applied to the parent on commit rather than directly to the store.
 
@@ -136,10 +133,6 @@ On `inner.Commit()`, the inner updates are merged into `tx.updates` (not written
 
 `SetEx` and `KV.SetEx` accept an `UpdateMode`:
 
-| Mode | Behavior |
-|---|---|
-| `ModeUpsert` | Insert if absent, update if present and value differs |
-| `ModeInsert` | Only insert if key does not exist |
-| `ModeUpdate` | Only update if key already exists and value differs |
+![Update Modes](images/tx-modes.png)
 
 If the mode's precondition is not met, `updated=false` is returned and no WAL entry is written.

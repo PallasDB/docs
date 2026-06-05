@@ -17,15 +17,7 @@ At its core PallasDB is an **LSM-tree storage engine** layered with:
 
 ## Source layout
 
-| Path | Purpose |
-|---|---|
-| `db/` | Core storage engine: cells, rows, WAL, SSTables, LSM, SQL, transactions |
-| `cluster/` | Raft node lifecycle, FSM, snapshot restore, Serf discovery |
-| `grpc/` | gRPC server implementation |
-| `proto/pallasdb/v1/kv.proto` | Protobuf service and message definitions |
-| `pb/v1/` | Generated Go protobuf/gRPC code |
-| `cmd/pallasdb/` | CLI binary (local ops, serve, cluster, benchmark) |
-| `benchmarks/` | Benchmark plans and recorded results |
+![Source Layout](images/intro-modules.png)
 
 ## Design goals
 

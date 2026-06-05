@@ -2,39 +2,7 @@
 
 PallasDB is structured as three independent layers that can be used separately or stacked together.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    CLI  (cmd/pallasdb)                  │
-├─────────────────────────────────────────────────────────┤
-│        Cluster / Raft  (cluster/)                       │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  FSM  →  db.KV  ←  Snapshot / Restore           │   │
-│  │  Serf discovery  →  AddVoter                     │   │
-│  └──────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│        gRPC transport  (grpc/)                          │
-│  KVService: Get / Put / Delete / Range (streaming)      │
-│  ClusterService: Join / ListMembers / GetLeader         │
-├─────────────────────────────────────────────────────────┤
-│        SQL layer  (db/table.go, db/sql_parser.go)       │
-│  CREATE TABLE / SELECT / INSERT / UPDATE / DELETE       │
-│  WHERE clause expression evaluator                      │
-├─────────────────────────────────────────────────────────┤
-│        KV store  (db/kv.go)                             │
-│  MVCC transactions • conflict detection • compaction    │
-├───────────────────────────┬─────────────────────────────┤
-│    Memtable               │    SSTables (sorted files)  │
-│    db/sorted_array.go     │    db/sorted_file.go        │
-│    in-memory sorted array │    on-disk sorted KV        │
-│    binary search          │    binary search + bloom    │
-├───────────────────────────┴─────────────────────────────┤
-│        Write-Ahead Log  (db/log.go, db/kv_entry.go)     │
-│        CRC32-checksummed entries, fsync on commit       │
-├─────────────────────────────────────────────────────────┤
-│        Binary encoding  (db/cell.go, db/row.go)         │
-│        TypeI64 / TypeStr • key encoding • value encoding│
-└─────────────────────────────────────────────────────────┘
-```
+![PallasDB Architecture](images/architecture.png)
 
 ## Data flow - write path
 
@@ -67,23 +35,10 @@ In **cluster mode**, mutating commands are first encoded as a `Command` protobuf
 
 Compaction has two sub-operations that are triggered by `KV.Compact()`:
 
-| Trigger | Operation |
-|---|---|
-| `memtable.Size() >= LogThreshold` | **Log compaction**: flush memtable → new SSTable, truncate WAL |
-| `sstable[i].size * GrowthFactor >= sstable[i+1].size` | **SSTable merge**: merge two adjacent SSTables into one |
+![Compaction Decision Flow](images/arch-compaction.png)
 
 Both operations update the double-buffered **metadata** files atomically before closing old files.
 
 ## Key dependencies
 
-| Library | Role |
-|---|---|
-| `github.com/hashicorp/raft` | Raft consensus |
-| `github.com/hashicorp/raft-boltdb/v2` | BoltDB-backed Raft log store |
-| `github.com/hashicorp/serf` | Gossip-based member discovery |
-| `github.com/bits-and-blooms/bloom/v3` | Bloom filters for SSTable key lookups |
-| `github.com/dgraph-io/ristretto/v2` | High-throughput LRU cache |
-| `google.golang.org/grpc` | gRPC transport |
-| `github.com/spf13/cobra` | CLI framework |
-| `github.com/spf13/viper` | Configuration management |
-| `go.etcd.io/bbolt` | BoltDB (Raft log persistence) |
+![Key Dependencies](images/arch-dependencies.png)

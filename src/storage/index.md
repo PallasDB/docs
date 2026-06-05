@@ -20,30 +20,10 @@ The storage engine lives entirely in `db/`. It is a classic **LSM-tree** (Log-St
 
 For a data directory `./data`, PallasDB creates:
 
-```
-./data/
-  kv_log           ← Write-Ahead Log
-  meta0            ← Metadata slot 0 (double-buffered)
-  meta1            ← Metadata slot 1 (double-buffered)
-  sstable_1        ← SSTable (newest first after compaction)
-  sstable_2
-  ...
-```
-
 SSTable filenames are `sstable_<version>` where `version` is a monotonically increasing `uint64` tracked in the metadata.
 
 ## Data flow summary
 
-```
-Write:
-  client → KVTX.updates (SortedArray)
-         → WAL (fsync)
-         → kv.mem (SortedArray, merged)
-         → compaction → SortedFile (SSTable)
-
-Read:
-  client → cache? → MergedSortedKV[updates, mem, sstable_1, sstable_2, ...]
-                                  ↑ bloom filter ↑ binary search
-```
+![Storage Data Flow](../images/storage-flow.png)
 
 The sections below document each component in detail.

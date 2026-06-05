@@ -8,11 +8,7 @@ Source: `benchmarks/m4-macbook-air-results.txt`, `benchmarks/PallasDB-M4-Benchma
 
 ## Summary results
 
-| Value size | Keys | Populate (ops/sec) | Random read (ops/sec) | Iterate values (ops/sec) | Data dir size |
-|---:|---:|---:|---:|---:|---:|
-| 128 B | 2,000,000 | 19,993 | 26,588 | 974,720 | 309 MiB |
-| 1 KiB | 500,000 | 43,362 | 33,529 | 732,912 | 505 MiB |
-| 16 KiB | 50,000 | 12,281 | 5,364 | 141,650 | 783 MiB |
+![Benchmark Results](images/bench-results.png)
 
 All runs reported `missing: 0` and `errors: 0`.
 
@@ -22,14 +18,7 @@ All runs reported `missing: 0` and `errors: 0`.
 
 Each benchmark run executes the following sequential phases:
 
-| Phase | Description |
-|---|---|
-| **populate** | Write `--keys` key-value pairs in batches of `--batch-size` per transaction |
-| **compact** | Explicit compaction (flush memtable, merge SSTables) |
-| **reopen** | Close and reopen the store (measures cold-start overhead) |
-| **random_read** | `--read-ops` random key lookups with full verification |
-| **iterate_keys** | Full forward key scan counting keys |
-| **iterate_values** | Full forward key+value scan with checksum |
+![Benchmark Phases](images/bench-phases.png)
 
 ---
 
@@ -87,12 +76,7 @@ When a transaction's updates are ordered after all existing memtable keys and no
 
 **Before vs. after (16 KiB values)**:
 
-| Metric | Before | After | Change |
-|---|---:|---:|---:|
-| Random read latency | 32,442 ns/op | 17,044 ns/op | −47.5% |
-| Random read throughput | 30,823 ops/sec | 58,668 ops/sec | +90.3% |
-| Total allocation | 2,282 MB | 188 MB | −91.8% |
-| GC count | 775 | 56 | −92.8% |
+![Before vs. After](images/bench-before-after.png)
 
 ---
 
